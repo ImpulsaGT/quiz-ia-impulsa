@@ -522,6 +522,7 @@
     <input type="text" id="inp-nombre" placeholder="">
     <label for="inp-area">Tu área o departamento</label>
     <input type="text" id="inp-area" placeholder="">
+    <div id="intro-warning" class="hidden" style="color:var(--bad); font-size:0.85rem; margin-top:-8px; margin-bottom:12px;">Ya se envió una respuesta con este nombre. Si crees que es un error, contacta a Impulsa.</div>
     <button class="primary-btn" id="btn-start" disabled>Comenzar quiz</button>
   </div>
 
@@ -558,7 +559,6 @@
 
     <button class="secondary-btn hidden" id="btn-mailto-fallback">Enviar por correo manualmente</button>
     <button class="secondary-btn" id="btn-copy">Copiar resumen</button>
-    <button class="secondary-btn" id="btn-restart">Volver a intentar</button>
 
     <p id="send-note" style="font-size:0.78rem; color:var(--muted); margin-top:14px; line-height:1.4;">
       Al hacer clic en "Finalizar y enviar a Impulsa" tu resultado se envía automáticamente — no necesitas abrir
@@ -807,15 +807,45 @@
   const inpArea = document.getElementById('inp-area');
   const btnStart = document.getElementById('btn-start');
 
+  const introWarning = document.getElementById('intro-warning');
+  const SUBMITTED_KEY = 'quizia_submitted_names';
+  function normalizeName(n){
+    return n.trim().toLowerCase().replace(/\s+/g,' ');
+  }
+  function getSubmittedNames(){
+    try{
+      return JSON.parse(localStorage.getItem(SUBMITTED_KEY) || '[]');
+    }catch(e){ return []; }
+  }
+  function hasAlreadySubmitted(name){
+    return getSubmittedNames().indexOf(normalizeName(name)) !== -1;
+  }
+  function markNameAsSubmitted(name){
+    const list = getSubmittedNames();
+    const norm = normalizeName(name);
+    if(list.indexOf(norm) === -1){
+      list.push(norm);
+      try{ localStorage.setItem(SUBMITTED_KEY, JSON.stringify(list)); }catch(e){}
+    }
+  }
+
   function checkIntroReady(){
     btnStart.disabled = !(inpNombre.value.trim().length>1 && inpArea.value.trim().length>1);
+    introWarning.classList.add('hidden');
   }
   inpNombre.addEventListener('input', checkIntroReady);
   inpArea.addEventListener('input', checkIntroReady);
 
   btnStart.addEventListener('click', ()=>{
-    userName = inpNombre.value.trim();
-    userArea = inpArea.value.trim();
+    const name = inpNombre.value.trim();
+    const area = inpArea.value.trim();
+    if(hasAlreadySubmitted(name)){
+      introWarning.classList.remove('hidden');
+      return;
+    }
+    introWarning.classList.add('hidden');
+    userName = name;
+    userArea = area;
     screenIntro.classList.add('hidden');
     screenQuiz.classList.remove('hidden');
     renderCurrent();
@@ -1316,7 +1346,6 @@
   const formFields = document.getElementById('form-fields');
   const btnSend = document.getElementById('btn-send');
   const btnCopy = document.getElementById('btn-copy');
-  const btnRestart = document.getElementById('btn-restart');
   const btnMailtoFallback = document.getElementById('btn-mailto-fallback');
   const sendStatus = document.getElementById('send-status');
 
@@ -1395,6 +1424,7 @@
       if(data && String(data.success) === 'false'){
         throw new Error(data.message || 'El formulario aun no ha sido activado.');
       }
+      markNameAsSubmitted(userName);
       formFields.classList.add('hidden');
       setSendStatus('ok', '✅ &nbsp;¡Listo! Tu resultado fue enviado automáticamente a Impulsa. Gracias por participar.');
     } catch(err){
@@ -1434,19 +1464,6 @@
     });
   });
 
-  btnRestart.addEventListener('click', ()=>{
-    current = 0; score = 0; answerLog.length = 0;
-    inpAplicacion.value = '';
-    inpAplicacion.style.borderColor = '';
-    formFields.classList.remove('hidden');
-    btnSend.disabled = false;
-    btnMailtoFallback.classList.add('hidden');
-    sendStatus.classList.add('hidden');
-    screenResults.classList.add('hidden');
-    screenIntro.classList.remove('hidden');
-    inpNombre.value=''; inpArea.value='';
-    checkIntroReady();
-  });
 
   /* ============== CONFETTI (celebración al terminar) ============== */
   const confettiCanvas = document.getElementById('confetti-canvas');
