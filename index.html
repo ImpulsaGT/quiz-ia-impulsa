@@ -1390,6 +1390,11 @@
         body: JSON.stringify(payload)
       });
       if(!res.ok) throw new Error('HTTP '+res.status);
+      let data = null;
+      try{ data = await res.json(); }catch(e){}
+      if(data && String(data.success) === 'false'){
+        throw new Error(data.message || 'El formulario aun no ha sido activado.');
+      }
       formFields.classList.add('hidden');
       setSendStatus('ok', '✅ &nbsp;¡Listo! Tu resultado fue enviado automáticamente a Impulsa. Gracias por participar.');
     } catch(err){
