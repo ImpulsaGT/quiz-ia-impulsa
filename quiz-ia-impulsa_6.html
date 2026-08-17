@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz de Inteligencia Artificial | Impulsa Desarrollos</title>
+<style>
+  :root{
+    --teal-950:#12333d;
+    --teal-900:#1e4f5e;
+    --teal-800:#2c6478;
+    --teal-700:#3a7c92;
+    --teal-100:#e7eef0;
+    --gold:#d9a855;
+    --gold-dark:#b9822c;
+    --bg:#f4f6f7;
+    --card:#ffffff;
+    --text:#1a2b30;
+    --muted:#5c7078;
+    --ok:#2e9e5b;
+    --bad:#d64545;
+    --radius:16px;
+    --shadow: 0 10px 30px rgba(18,51,61,0.12);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);}
+  body{min-height:100vh;display:flex;flex-direction:column;align-items:center;}
+
+  .hero{
+    width:100%;
+    background: linear-gradient(160deg, var(--teal-950) 0%, var(--teal-900) 55%, var(--teal-800) 100%);
+    color:#fff;
+    text-align:center;
+    padding:36px 20px 44px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image: radial-gradient(circle at 20% 20%, rgba(217,168,85,0.10), transparent 40%),
+                       radial-gradient(circle at 85% 80%, rgba(217,168,85,0.08), transparent 45%);
+    pointer-events:none;
+  }
+  .hero img.logo{
+    width:190px;
+    max-width:60vw;
+    height:auto;
+    display:block;
+    margin:0 auto 14px;
+    position:relative;
+    z-index:1;
+  }
+  .hero h1{
+    margin:0 0 6px;
+    font-size:1.5rem;
+    letter-spacing:0.5px;
+    font-weight:700;
+    position:relative;
+    z-index:1;
+  }
+  .hero p.tag{
+    margin:0;
+    font-size:0.95rem;
+    color:#cfe3e9;
+    position:relative;
+    z-index:1;
+  }
+
+  .wrap{
+    width:100%;
+    max-width:680px;
+    padding:22px 18px 60px;
+    flex:1;
+  }
+
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:28px 24px;
+    margin-bottom:18px;
+  }
+
+  .progress-outer{
+    width:100%;
+    height:10px;
+    background:var(--teal-100);
+    border-radius:999px;
+    overflow:hidden;
+    margin-bottom:10px;
+  }
+  .progress-inner{
+    height:100%;
+    background:linear-gradient(90deg, var(--gold-dark), var(--gold));
+    width:0%;
+    transition:width .4s ease;
+  }
+  .progress-label{
+    display:flex;
+    justify-content:space-between;
+    font-size:0.8rem;
+    color:var(--muted);
+    margin-bottom:18px;
+  }
+
+  h2.qtitle{
+    font-size:1.15rem;
+    line-height:1.4;
+    margin:0 0 20px;
+    color:var(--teal-950);
+  }
+  .kicker{
+    display:inline-block;
+    font-size:0.7rem;
+    font-weight:700;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--gold-dark);
+    background:#fbf1e1;
+    padding:4px 10px;
+    border-radius:999px;
+    margin-bottom:12px;
+  }
+
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .opt-btn{
+    text-align:left;
+    padding:14px 16px;
+    border-radius:12px;
+    border:2px solid var(--teal-100);
+    background:#fff;
+    font-size:0.98rem;
+    color:var(--text);
+    cursor:pointer;
+    transition: all .15s ease;
+  }
+  .opt-btn:hover{ border-color:var(--gold); background:#fffaf0; }
+  .opt-btn.selected{ border-color:var(--teal-800); }
+  .opt-btn.correct{ border-color:var(--ok); background:#eaf8ef; color:#155c31; }
+  .opt-btn.incorrect{ border-color:var(--bad); background:#fdecec; color:#8f2323; }
+  .opt-btn:disabled{ cursor:default; }
+
+  .tf-row{ display:flex; gap:12px; }
+  .tf-row .opt-btn{ flex:1; text-align:center; font-weight:600; }
+
+  .feedback{
+    margin-top:16px;
+    padding:12px 14px;
+    border-radius:10px;
+    font-size:0.9rem;
+    display:none;
+  }
+  .feedback.show{ display:block; }
+  .feedback.ok{ background:#eaf8ef; color:#155c31; }
+  .feedback.bad{ background:#fdecec; color:#8f2323; }
+
+  .next-btn, .primary-btn{
+    margin-top:20px;
+    width:100%;
+    padding:14px 18px;
+    border:none;
+    border-radius:12px;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold));
+    color:#fff;
+    font-size:1rem;
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:0.3px;
+    transition: transform .1s ease, box-shadow .1s ease;
+  }
+  .next-btn:hover, .primary-btn:hover{ box-shadow:0 6px 18px rgba(185,130,44,0.35); transform:translateY(-1px);}
+  .next-btn:disabled{ opacity:0.45; cursor:not-allowed; box-shadow:none; transform:none;}
+
+  .secondary-btn{
+    margin-top:10px;
+    width:100%;
+    padding:13px 18px;
+    border-radius:12px;
+    border:2px solid var(--teal-800);
+    background:#fff;
+    color:var(--teal-900);
+    font-size:0.95rem;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .secondary-btn:hover{ background:var(--teal-100); }
+
+  label{ display:block; font-size:0.85rem; font-weight:600; color:var(--teal-900); margin:14px 0 6px;}
+  input[type=text], textarea{
+    width:100%;
+    padding:12px 14px;
+    border-radius:10px;
+    border:2px solid var(--teal-100);
+    font-size:0.98rem;
+    font-family:inherit;
+    resize:vertical;
+  }
+  input[type=text]:focus, textarea:focus{ outline:none; border-color:var(--gold); }
+
+  .timer-bar-outer{
+    height:8px;
+    background:var(--teal-100);
+    border-radius:999px;
+    overflow:hidden;
+    margin-bottom:16px;
+  }
+  .timer-bar-inner{
+    height:100%;
+    background:linear-gradient(90deg, var(--bad), var(--gold));
+    width:100%;
+    transition: width .1s linear;
+  }
+
+  .game-hint{
+    font-size:0.85rem;
+    color:var(--muted);
+    margin-bottom:16px;
+    line-height:1.5;
+  }
+
+  .prompt-box{
+    background:var(--teal-100);
+    border-left:4px solid var(--gold);
+    border-radius:8px;
+    padding:12px 14px;
+    margin-bottom:14px;
+    font-style:italic;
+    color:var(--teal-950);
+    font-size:0.95rem;
+    line-height:1.4;
+  }
+  .prompt-box .prompt-label{
+    display:block;
+    font-style:normal;
+    font-size:0.68rem;
+    font-weight:800;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--gold-dark);
+    margin-bottom:4px;
+  }
+
+  /* Ordering game */
+  .order-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+  .order-item{
+    display:flex; align-items:center; gap:10px;
+    padding:12px 14px; border-radius:10px; border:2px solid var(--teal-100);
+    background:#fff; cursor:pointer; font-size:0.92rem;
+  }
+  .order-item.picked{ border-color:var(--gold); background:#fffaf0; }
+  .order-badge{
+    width:24px; height:24px; border-radius:50%; background:var(--teal-100);
+    color:var(--teal-900); font-size:0.8rem; font-weight:700;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .order-item.picked .order-badge{ background:var(--gold); color:#fff; }
+
+  /* Matching game (términos vs definiciones) */
+  .match-grid{
+    display:flex;
+    gap:10px;
+    margin-bottom:8px;
+    align-items:flex-start;
+  }
+  .match-col{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    min-width:0;
+  }
+  .match-col-title{
+    font-size:0.7rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    color:var(--muted);
+    margin-bottom:2px;
+    text-align:center;
+  }
+  .match-item{
+    min-width:0;
+    overflow-wrap:break-word;
+    word-break:break-word;
+    min-height:60px;
+    padding:10px 8px;
+    border-radius:10px;
+    border:2px solid var(--teal-100);
+    background:#fff;
+    color:var(--text);
+    font-size:0.78rem;
+    line-height:1.25;
+    text-align:center;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    user-select:none;
+    transition: all .12s ease;
+  }
+  .match-item:hover{ border-color:var(--gold); }
+  .match-item.selected{ border-color:var(--gold); background:#fffaf0; box-shadow:0 0 0 2px rgba(217,168,85,0.25); }
+  .match-item.matched{ border-color:var(--ok); background:#eaf8ef; color:#155c31; cursor:default; }
+  .match-item.wrong{ animation: shakeX .35s ease; border-color:var(--bad); background:#fdecec; }
+  .match-item.disabled{ cursor:default; }
+  @keyframes shakeX{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-5px); }
+    75%{ transform:translateX(5px); }
+  }
+
+  .stat-row{ display:flex; justify-content:space-between; font-size:0.85rem; color:var(--muted); margin-bottom:10px; }
+
+  /* Prompt builder game ("arma tu prompt") */
+  .pb-preview{
+    background:var(--teal-950);
+    color:#fff;
+    border-radius:12px;
+    padding:16px;
+    font-size:0.95rem;
+    line-height:1.5;
+    margin-bottom:18px;
+    min-height:70px;
+  }
+  .pb-preview .pb-label{
+    display:block;
+    font-size:0.68rem;
+    font-weight:800;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin-bottom:6px;
+  }
+  .pb-preview .pb-blank{
+    color:rgba(255,255,255,0.4);
+    font-style:italic;
+  }
+  .pb-preview .pb-filled{
+    color:var(--gold);
+    font-weight:700;
+  }
+  .pb-group{ margin-bottom:16px; }
+  .pb-group-title{
+    font-size:0.72rem;
+    font-weight:800;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:8px;
+  }
+  .pb-chips{ display:flex; flex-direction:column; gap:8px; }
+  .pb-chip{
+    text-align:left;
+    padding:10px 14px;
+    border-radius:10px;
+    border:2px solid var(--teal-100);
+    background:#fff;
+    font-size:0.85rem;
+    color:var(--text);
+    cursor:pointer;
+    transition: all .12s ease;
+  }
+  .pb-chip:hover{ border-color:var(--gold); background:#fffaf0; }
+  .pb-chip.active{ border-color:var(--gold-dark); background:#fbf1e1; font-weight:700; }
+
+  /* Prompt comparison screen ("¿cuál prompt se porta mejor?") */
+  .pc-list{ display:flex; flex-direction:column; gap:10px; margin-bottom:6px; }
+  .pc-card{
+    border:2px solid var(--teal-100);
+    border-radius:12px;
+    padding:14px 16px;
+    cursor:pointer;
+    transition: all .15s ease;
+  }
+  .pc-card:hover{ border-color:var(--gold); background:#fffaf0; }
+  .pc-card.disabled{ cursor:default; }
+  .pc-card .pc-label{ font-weight:700; font-size:0.85rem; color:var(--teal-950); margin-bottom:4px; }
+  .pc-card .pc-quote{ font-style:italic; font-size:0.85rem; color:var(--muted); }
+  .pc-badge{
+    display:none;
+    font-size:0.66rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;
+    padding:3px 9px; border-radius:999px; margin:8px 0 6px;
+  }
+  .pc-card.revealed .pc-badge{ display:inline-block; }
+  .pc-badge.malo{ background:#fdecec; color:#8f2323; }
+  .pc-badge.regular{ background:#fff3da; color:#8a6212; }
+  .pc-badge.excelente{ background:#eaf8ef; color:#155c31; }
+  .pc-card .pc-comment{ display:none; font-size:0.82rem; line-height:1.4; color:var(--text); }
+  .pc-card.revealed .pc-comment{ display:block; }
+  .pc-card.revealed.best{ border-color:var(--ok); background:#f5fbf7; }
+  .pc-card.revealed.picked-wrong{ border-color:var(--bad); }
+
+  /* Recommendations / do's and don'ts screen */
+  .dd-grid{ display:flex; flex-direction:column; gap:12px; margin-bottom:6px; }
+  .dd-col{ border-radius:12px; padding:14px 16px; }
+  .dd-col.dos{ background:#eaf8ef; }
+  .dd-col.donts{ background:#fdecec; }
+  .dd-col-title{
+    font-weight:800; font-size:0.85rem; margin-bottom:10px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .dd-col.dos .dd-col-title{ color:#155c31; }
+  .dd-col.donts .dd-col-title{ color:#8f2323; }
+  .dd-item{
+    font-size:0.85rem; line-height:1.4; margin-bottom:10px;
+    padding-left:20px; position:relative;
+  }
+  .dd-item:last-child{ margin-bottom:0; }
+  .dd-item::before{ position:absolute; left:0; top:0; font-weight:800; }
+  .dd-col.dos .dd-item::before{ content:'✓'; color:#2e9e5b; }
+  .dd-col.donts .dd-item::before{ content:'✕'; color:#d64545; }
+
+  /* Results */
+  .score-circle{
+    width:150px; height:150px; border-radius:50%;
+    margin:0 auto 18px;
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column;
+    background: conic-gradient(var(--gold) calc(var(--pct,0) * 1%), var(--teal-100) 0);
+    position:relative;
+  }
+  .score-circle::before{
+    content:"";
+    position:absolute; inset:10px; background:#fff; border-radius:50%;
+  }
+  .score-circle .val{
+    position:relative; z-index:1; font-size:2rem; font-weight:800; color:var(--teal-950);
+  }
+  .score-circle .lbl{
+    position:relative; z-index:1; font-size:0.75rem; color:var(--muted); font-weight:600;
+  }
+  .badge-title{
+    text-align:center; font-size:1.2rem; font-weight:800; color:var(--teal-950); margin-bottom:4px;
+  }
+  .badge-sub{
+    text-align:center; font-size:0.9rem; color:var(--muted); margin-bottom:18px;
+  }
+  .breakdown{
+    display:flex; flex-direction:column; gap:8px; margin:16px 0 4px;
+    font-size:0.85rem;
+  }
+  .breakdown div span{ float:right; font-weight:700; color:var(--teal-900); }
+
+  .thanks-title{
+    text-align:center; font-size:1.05rem; font-weight:800; color:var(--teal-950);
+    margin:2px 0 2px;
+  }
+
+  .send-status{
+    margin:16px 0 4px;
+    padding:12px 14px;
+    border-radius:10px;
+    font-size:0.85rem;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    line-height:1.4;
+  }
+  .send-status.hidden{ display:none !important; }
+  .send-status.pending{ background:#fff7e6; color:#8a6212; }
+  .send-status.ok{ background:#eaf8ef; color:#155c31; }
+  .send-status.err{ background:#fdecec; color:#8f2323; }
+  .spinner{
+    width:14px; height:14px; border-radius:50%; flex-shrink:0;
+    border:2px solid rgba(0,0,0,0.15); border-top-color:currentColor;
+    animation:spin .7s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  #confetti-canvas{
+    position:fixed; inset:0; width:100%; height:100%;
+    pointer-events:none; z-index:999;
+  }
+
+  footer{
+    text-align:center;
+    font-size:0.75rem;
+    color:var(--muted);
+    padding:10px 20px 30px;
+  }
+
+  .hidden{ display:none !important; }
+
+  @media (max-width:420px){
+    .hero h1{ font-size:1.25rem; }
+    .card{ padding:22px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+
+<div class="hero">
+  <img class="logo" src="data:image/png;base64,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" alt="Impulsa Desarrollos">
+  <h1>Quiz de Inteligencia Artificial</h1>
+  <p class="tag">¿Qué tanto sabes realmente sobre IA? Descúbrelo en unos minutos.</p>
+</div>
+
+<div class="wrap">
+
+  <!-- SCREEN: INTRO -->
+  <div id="screen-intro" class="card">
+    <span class="kicker">Impulsa Desarrollos</span>
+    <h2 class="qtitle">Antes de empezar</h2>
+    <p style="color:var(--muted); font-size:0.92rem; line-height:1.5;">
+      Este quiz tiene preguntas capciosas, una ronda relámpago, un juego de ordenar pasos, un juego de
+      relacionar términos y hasta un minijuego donde armas tu propio prompt paso a paso — todo sobre
+      Inteligencia Artificial: qué es, cómo funciona y cómo se aplica en el trabajo. Antes de terminar
+      vemos una comparación de prompts y unas recomendaciones de uso, y al final nos dices cómo
+      aplicarías la IA en tu área — tu resultado se envía automáticamente a Impulsa. ¡Gracias por
+      participar!
+    </p>
+    <label for="inp-nombre">Tu nombre</label>
+    <input type="text" id="inp-nombre" placeholder="">
+    <label for="inp-area">Tu área o departamento</label>
+    <input type="text" id="inp-area" placeholder="">
+    <button class="primary-btn" id="btn-start" disabled>Comenzar quiz</button>
+  </div>
+
+  <!-- SCREEN: QUIZ -->
+  <div id="screen-quiz" class="card hidden">
+    <div class="progress-outer"><div class="progress-inner" id="progress-inner"></div></div>
+    <div class="progress-label">
+      <span id="progress-text">Pregunta 1 de 20</span>
+      <span id="progress-score">0 pts</span>
+    </div>
+    <div id="quiz-body"></div>
+  </div>
+
+  <!-- SCREEN: RESULTS -->
+  <div id="screen-results" class="card hidden">
+    <div class="thanks-title" id="thanks-title">¡Gracias por participar!</div>
+    <div class="score-circle" id="score-circle" style="--pct:0">
+      <div class="val" id="score-pct">0%</div>
+      <div class="lbl">de aciertos</div>
+    </div>
+    <div class="badge-title" id="badge-title"></div>
+    <div class="badge-sub" id="badge-sub"></div>
+
+    <div class="breakdown" id="breakdown"></div>
+
+    <div id="form-fields">
+      <label for="inp-aplicacion">¿En qué área de tu trabajo crees que podrías aplicar la IA, y cómo la usarías?</label>
+      <textarea id="inp-aplicacion" rows="4" placeholder="Escribe tu idea aquí..."></textarea>
+
+      <button class="primary-btn" id="btn-send">Finalizar y enviar a Impulsa</button>
+    </div>
+
+    <div class="send-status hidden" id="send-status"></div>
+
+    <button class="secondary-btn hidden" id="btn-mailto-fallback">Enviar por correo manualmente</button>
+    <button class="secondary-btn" id="btn-copy">Copiar resumen</button>
+    <button class="secondary-btn" id="btn-restart">Volver a intentar</button>
+
+    <p id="send-note" style="font-size:0.78rem; color:var(--muted); margin-top:14px; line-height:1.4;">
+      Al hacer clic en "Finalizar y enviar a Impulsa" tu resultado se envía automáticamente — no necesitas abrir
+      tu correo ni hacer nada más.
+    </p>
+  </div>
+
+</div>
+
+<footer>Impulsa Desarrollos &middot; Quiz interno de Inteligencia Artificial</footer>
+
+<script>
+(function(){
+
+  /* ============== CONTENT DEFINITION ============== */
+
+  // type: 'mc' (multiple choice) | 'tf' (true/false) | 'speed' (tf, timed) | 'order' | 'match' | 'draw'
+  const ITEMS = [
+    {type:'tf', points:5,
+      q:'La Inteligencia Artificial puede pensar y sentir emociones como un ser humano.',
+      answer:false,
+      explain:'Falso. La IA procesa patrones estadísticos en datos; no tiene conciencia, emociones ni comprensión real, aunque puede simular respuestas que "suenan" humanas.'},
+
+    {type:'mc', points:5,
+      q:'¿Cuál de estas afirmaciones sobre herramientas como ChatGPT es correcta?',
+      options:[
+        'Siempre da información 100% verificada y actualizada al minuto',
+        'Puede generar respuestas muy convincentes pero incorrectas ("alucinaciones")',
+        'Solo funciona si está conectada a internet en tiempo real mientras responde',
+        'Fue programada línea por línea para responder cada pregunta posible'
+      ],
+      answer:1,
+      explain:'Los modelos de lenguaje pueden "alucinar": inventar datos, cifras o fuentes que suenan reales pero son falsos. Siempre hay que verificar.'},
+
+    {type:'tf', points:5,
+      q:'Machine Learning (aprendizaje automático) es exactamente lo mismo que Inteligencia Artificial.',
+      answer:false,
+      explain:'Falso. El Machine Learning es un subcampo de la IA: una de las formas en que un sistema puede "aprender" a partir de datos, pero no es el único enfoque de IA.'},
+
+    {type:'mc', points:5,
+      q:'¿Qué es una "alucinación" en IA generativa?',
+      options:[
+        'Un error de la pantalla o del navegador',
+        'Cuando el modelo inventa información falsa con apariencia de certeza',
+        'Un virus informático que ataca modelos de IA',
+        'Una función especial para generar imágenes surrealistas'
+      ],
+      answer:1,
+      explain:'Es cuando la IA presenta información inventada como si fuera un hecho, con total seguridad en el tono.'},
+
+    {type:'tf', points:5,
+      q:'Entre más datos —aunque sean de mala calidad— se usen para entrenar un modelo de IA, mejores serán sus resultados.',
+      answer:false,
+      explain:'Falso. Es el principio de "garbage in, garbage out": datos de mala calidad producen resultados de mala calidad, sin importar la cantidad.'},
+
+    {type:'mc', points:5,
+      q:'En un desarrollo inmobiliario o de construcción, ¿cuál es un uso real de la IA hoy en día?',
+      options:[
+        'Sustituir por completo al ingeniero residente en obra',
+        'Ayudar a analizar planos, presupuestos o cronogramas y detectar inconsistencias',
+        'Firmar contratos legales de forma autónoma',
+        'Fijar el precio final de venta sin ninguna revisión humana'
+      ],
+      answer:1,
+      explain:'La IA es hoy una herramienta de apoyo: analiza datos, detecta errores o acelera tareas repetitivas, pero las decisiones finales siguen siendo humanas.'},
+
+    {type:'tf', points:5,
+      q:'Un "prompt" es la instrucción o pregunta que le das a una IA generativa para obtener una respuesta.',
+      answer:true,
+      explain:'Correcto. Entre más claro y específico sea el prompt, mejor será la respuesta.'},
+
+    {type:'mc', points:5,
+      q:'¿Cuál de estas herramientas NO se considera Inteligencia Artificial generativa?',
+      options:[
+        'ChatGPT',
+        'Midjourney',
+        'Una hoja de cálculo con fórmulas básicas de suma y resta',
+        'GitHub Copilot'
+      ],
+      answer:2,
+      explain:'Las fórmulas básicas de una hoja de cálculo son automatización tradicional con reglas fijas, no IA generativa.'},
+
+    {type:'tf', points:5,
+      q:'La IA puede tener sesgos (bias) porque aprende de datos creados y seleccionados por personas.',
+      answer:true,
+      explain:'Correcto. Si los datos de entrenamiento reflejan sesgos humanos, el modelo puede reproducirlos o amplificarlos.'},
+
+    {type:'mc', points:5,
+      q:'Si necesitas usar IA para un tema legal o financiero delicado de la empresa, lo más responsable es:',
+      options:[
+        'Confiar ciegamente en la respuesta de la IA',
+        'Usarla como apoyo inicial y validar siempre con una persona experta',
+        'No usarla nunca bajo ninguna circunstancia',
+        'Compartir todos los datos confidenciales de la empresa sin restricción'
+      ],
+      answer:1,
+      explain:'La IA puede acelerar el trabajo, pero en temas sensibles siempre debe validarse con criterio humano experto.'},
+
+    {type:'tf', points:5,
+      q:'Entre más "humana" o segura suene una respuesta de una IA, más probable es que sea 100% correcta.',
+      answer:false,
+      explain:'Falso. La fluidez del lenguaje no garantiza exactitud: una IA puede sonar muy segura y aun así estar equivocada.'},
+
+    {type:'mc', points:5,
+      q:'¿Qué significa "entrenar" un modelo de IA?',
+      options:[
+        'Instalar un programa nuevo en la computadora',
+        'Enseñarle a reconocer patrones a partir de grandes cantidades de datos',
+        'Conectarlo a internet por primera vez',
+        'Actualizar el sistema operativo del equipo'
+      ],
+      answer:1,
+      explain:'Entrenar un modelo es exponerlo a muchos datos para que ajuste sus parámetros y aprenda patrones útiles.'},
+
+    {type:'tf', points:5,
+      q:'Compartir información confidencial de la empresa en herramientas de IA públicas y gratuitas no representa ningún riesgo.',
+      answer:false,
+      explain:'Falso. Muchas herramientas gratuitas pueden usar lo que escribes para seguir entrenando sus modelos; hay que cuidar la información sensible.'},
+
+    {type:'mc', points:5,
+      q:'¿Cuál es una diferencia clave entre la automatización tradicional y la Inteligencia Artificial?',
+      options:[
+        'No hay ninguna diferencia real entre ambas',
+        'La automatización sigue reglas fijas; la IA puede aprender y adaptarse a partir de datos',
+        'La IA siempre es más lenta que la automatización tradicional',
+        'La automatización tradicional consume más electricidad que la IA'
+      ],
+      answer:1,
+      explain:'La automatización clásica ejecuta reglas predefinidas ("si pasa X, haz Y"); la IA puede identificar patrones nuevos y adaptar su comportamiento.'},
+
+    // Speed round (más tiempo por pregunta para que no se sienta imposible)
+    {type:'speed', points:5, seconds:15,
+      q:'Ronda relámpago (1/4): La IA puede generar imágenes a partir de una descripción de texto.',
+      answer:true},
+    {type:'speed', points:5, seconds:15,
+      q:'Ronda relámpago (2/4): Todos los modelos de IA son iguales y sirven igual de bien para cualquier tarea.',
+      answer:false},
+    {type:'speed', points:5, seconds:15,
+      q:'Ronda relámpago (3/4): Un prompt claro y con contexto mejora la calidad de la respuesta.',
+      answer:true},
+    {type:'speed', points:5, seconds:15,
+      q:'Ronda relámpago (4/4): Por defecto, la mayoría de asistentes de IA "recuerda" cada conversación pasada igual que lo haría una persona.',
+      answer:false},
+
+    // Ordering game
+    {type:'order', points:15,
+      q:'Minijuego: ordena correctamente los pasos para usar bien la IA en una tarea del trabajo. Haz clic en cada paso en el orden correcto.',
+      steps:[
+        'Definir claramente el objetivo o la tarea a resolver',
+        'Escribir un prompt claro, con contexto suficiente',
+        'Revisar y validar la respuesta que da la IA',
+        'Ajustar el prompt si el resultado no sirve',
+        'Aplicar el resultado final, ya validado por una persona'
+      ]},
+
+    // Matching game (más dinámico y sencillo que un memorama: no hay que memorizar posiciones,
+    // se ve todo el tablero y solo hay que relacionar cada término con su definición)
+    {type:'match', points:20,
+      q:'Minijuego: relaciona cada término de IA con su definición. Haz clic en un término y luego en la definición que le corresponde.',
+      pairs:[
+        ['IA', 'Sistemas capaces de imitar capacidades humanas como razonar o reconocer patrones'],
+        ['Machine Learning', 'Subcampo de la IA donde el sistema aprende de datos sin reglas fijas'],
+        ['Prompt', 'Instrucción que le das a una IA generativa para obtener una respuesta'],
+        ['Alucinación', 'Cuando la IA genera información falsa con apariencia de certeza'],
+        ['Sesgo (Bias)', 'Distorsión en los resultados heredada de los datos de entrenamiento']
+      ]},
+
+    // Prompt builder game: en vez de dibujar, aquí armas un prompt real pieza por pieza
+    // (rol + tarea + contexto + tono) y ves cómo eso cambia el resultado que pedirías a una IA.
+    {type:'promptbuilder', points:10,
+      q:'Minijuego: arma tu propio prompt para una IA, eligiendo una opción de cada categoría. Mira cómo se va formando abajo.',
+      groups:[
+        { key:'rol', title:'1. ¿Qué rol le das a la IA?', options:[
+          'un ingeniero de obra con 10 años de experiencia',
+          'un asesor de ventas inmobiliarias',
+          'un abogado especializado en contratos de construcción'
+        ]},
+        { key:'tarea', title:'2. ¿Qué necesitas que haga?', options:[
+          'revisar y resumir un contrato de proveedores',
+          'redactar un correo de seguimiento a un cliente interesado',
+          'analizar un cronograma de obra y detectar riesgos de atraso'
+        ]},
+        { key:'contexto', title:'3. ¿Para qué situación?', options:[
+          'un proyecto residencial que se entrega en 6 meses',
+          'un cliente que todavía no decide si comprar',
+          'una reunión de coordinación con subcontratistas'
+        ]},
+        { key:'tono', title:'4. ¿Con qué tono o formato?', options:[
+          'profesional y directo, en máximo 5 puntos',
+          'cercano y fácil de entender, sin tecnicismos',
+          'formal, como para un documento oficial'
+        ]}
+      ],
+      explainAfter:'¡Ese es un buen prompt! Tiene los 4 ingredientes clave: un rol claro, una tarea específica, contexto de la situación y un tono/formato definido. Si le hubieras escrito a la IA solo "ayúdame con esto", el resultado habría sido genérico y probablemente inútil. Entre más de estos 4 elementos incluyas, mejores y más útiles serán las respuestas que obtengas.'},
+
+    // Comparación de prompts: en vez de saltar directo al resultado, primero vemos "cómo se
+    // comportaría" cada nivel de prompt con la misma tarea, para cerrar la idea del juego anterior.
+    {type:'promptcompare', points:5,
+      q:'Última parada antes del resultado: ¿cuál de estos 3 prompts crees que le daría el mejor resultado a la IA? Haz clic en uno para revelar cómo se "comporta" cada uno.',
+      options:[
+        { label:'Prompt vago', text:'"Ayúdame con un correo."', rating:'malo',
+          comment:'Sin rol, sin tarea específica, sin contexto ni tono. La IA tiene que adivinar todo — el resultado será genérico y probablemente haya que reescribirlo por completo.' },
+        { label:'Prompt básico', text:'"Escribe un correo para un cliente sobre su compra."', rating:'regular',
+          comment:'Ya hay una tarea y un destinatario, pero falta contexto (¿qué pasó con la compra?) y tono. El resultado será aceptable, pero genérico y habrá que ajustarlo.' },
+        { label:'Prompt completo (como el que armaste)', text:'"Actúa como un asesor de ventas inmobiliarias y ayúdame a redactar un correo de seguimiento a un cliente interesado, para un proyecto residencial que se entrega en 6 meses. Usa un tono profesional y directo, en máximo 5 puntos."', rating:'excelente',
+          comment:'Rol, tarea, contexto y tono claros. Este es el tipo de prompt que da resultados realmente útiles, casi listos para usar directamente.' }
+      ],
+      bestIndex:2},
+
+    // Recomendaciones / políticas de uso de IA (cierre informativo, sin puntaje)
+    {type:'recommendations', points:0,
+      q:'Antes de ver tu resultado: algunas recomendaciones para usar la IA en Impulsa',
+      dos:[
+        'Usa la IA como apoyo para tu trabajo, no como reemplazo de tu criterio profesional',
+        'Verifica siempre la información importante antes de usarla, enviarla o compartirla',
+        'Da contexto claro en tus prompts: rol, tarea, contexto y tono (como en el juego anterior)',
+        'Consulta con tu jefe de área o con Sistemas si tienes dudas sobre qué herramienta usar'
+      ],
+      donts:[
+        'No compartas información confidencial de clientes, contratos, finanzas o proyectos en herramientas de IA públicas y gratuitas',
+        'No tomes decisiones legales, financieras o contractuales basándote solo en la respuesta de una IA',
+        'No asumas que una respuesta segura y bien escrita es automáticamente correcta',
+        'No uses la IA para reemplazar la revisión humana en documentos oficiales o de cliente'
+      ]}
+  ];
+
+  const MAX_SCORE = ITEMS.reduce((s,i)=>s+i.points,0);
+
+  /* ============== STATE ============== */
+  let current = 0;
+  let score = 0;
+  let userName = '';
+  let userArea = '';
+  const answerLog = []; // {label, points, max}
+
+  /* ============== DOM refs ============== */
+  const screenIntro = document.getElementById('screen-intro');
+  const screenQuiz = document.getElementById('screen-quiz');
+  const screenResults = document.getElementById('screen-results');
+  const quizBody = document.getElementById('quiz-body');
+  const progressInner = document.getElementById('progress-inner');
+  const progressText = document.getElementById('progress-text');
+  const progressScore = document.getElementById('progress-score');
+
+  const inpNombre = document.getElementById('inp-nombre');
+  const inpArea = document.getElementById('inp-area');
+  const btnStart = document.getElementById('btn-start');
+
+  function checkIntroReady(){
+    btnStart.disabled = !(inpNombre.value.trim().length>1 && inpArea.value.trim().length>1);
+  }
+  inpNombre.addEventListener('input', checkIntroReady);
+  inpArea.addEventListener('input', checkIntroReady);
+
+  btnStart.addEventListener('click', ()=>{
+    userName = inpNombre.value.trim();
+    userArea = inpArea.value.trim();
+    screenIntro.classList.add('hidden');
+    screenQuiz.classList.remove('hidden');
+    renderCurrent();
+  });
+
+  function updateProgress(){
+    const pct = Math.round((current)/ITEMS.length*100);
+    progressInner.style.width = pct+'%';
+    progressText.textContent = 'Pregunta '+Math.min(current+1,ITEMS.length)+' de '+ITEMS.length;
+    progressScore.textContent = score+' pts';
+  }
+
+  function goNext(){
+    current++;
+    if(current>=ITEMS.length){
+      showResults();
+    } else {
+      renderCurrent();
+    }
+  }
+
+  function renderCurrent(){
+    updateProgress();
+    const item = ITEMS[current];
+    quizBody.innerHTML = '';
+    if(item.type==='mc') renderMC(item);
+    else if(item.type==='tf') renderTF(item);
+    else if(item.type==='speed') renderSpeed(item);
+    else if(item.type==='order') renderOrder(item);
+    else if(item.type==='match') renderMatch(item);
+    else if(item.type==='promptbuilder') renderPromptBuilder(item);
+    else if(item.type==='promptcompare') renderPromptCompare(item);
+    else if(item.type==='recommendations') renderRecommendations(item);
+  }
+
+  function kickerFor(item){
+    if(item.type==='speed') return 'Ronda relámpago';
+    if(item.type==='order') return 'Minijuego · Ordenar';
+    if(item.type==='match') return 'Minijuego · Relacionar';
+    if(item.type==='promptbuilder') return 'Minijuego · Arma tu prompt';
+    if(item.type==='promptcompare') return 'Comparación de prompts';
+    if(item.type==='recommendations') return 'Buenas prácticas';
+    return 'Pregunta';
+  }
+
+  /* ---------- Multiple choice ---------- */
+  function renderMC(item){
+    const kicker = document.createElement('span');
+    kicker.className='kicker'; kicker.textContent=kickerFor(item);
+    const h = document.createElement('h2'); h.className='qtitle'; h.textContent=item.q;
+    const optsWrap = document.createElement('div'); optsWrap.className='options';
+    const feedback = document.createElement('div'); feedback.className='feedback';
+    const nextBtn = document.createElement('button'); nextBtn.className='next-btn'; nextBtn.textContent='Siguiente'; nextBtn.disabled=true;
+
+    item.options.forEach((opt, idx)=>{
+      const b = document.createElement('button');
+      b.className='opt-btn'; b.textContent=opt;
+      b.addEventListener('click', ()=>{
+        if(b.dataset.locked) return;
+        Array.from(optsWrap.children).forEach(c=>c.dataset.locked='1');
+        const correct = idx===item.answer;
+        b.classList.add(correct?'correct':'incorrect');
+        if(!correct){
+          optsWrap.children[item.answer].classList.add('correct');
+        }
+        Array.from(optsWrap.children).forEach(c=>c.disabled=true);
+        registerAnswer(item, correct);
+        feedback.textContent = (correct?'¡Correcto! ':'No exactamente. ') + item.explain;
+        feedback.className = 'feedback show ' + (correct?'ok':'bad');
+        nextBtn.disabled=false;
+      });
+      optsWrap.appendChild(b);
+    });
+
+    nextBtn.addEventListener('click', goNext);
+    quizBody.append(kicker,h,optsWrap,feedback,nextBtn);
+  }
+
+  /* ---------- True / False ---------- */
+  function renderTF(item){
+    const kicker = document.createElement('span');
+    kicker.className='kicker'; kicker.textContent=kickerFor(item);
+    const h = document.createElement('h2'); h.className='qtitle'; h.textContent=item.q;
+    const row = document.createElement('div'); row.className='tf-row';
+    const feedback = document.createElement('div'); feedback.className='feedback';
+    const nextBtn = document.createElement('button'); nextBtn.className='next-btn'; nextBtn.textContent='Siguiente'; nextBtn.disabled=true;
+
+    [['Verdadero',true],['Falso',false]].forEach(([label,val])=>{
+      const b = document.createElement('button');
+      b.className='opt-btn'; b.textContent=label;
+      b.addEventListener('click', ()=>{
+        if(b.dataset.locked) return;
+        Array.from(row.children).forEach(c=>c.dataset.locked='1');
+        const correct = val===item.answer;
+        b.classList.add(correct?'correct':'incorrect');
+        if(!correct){
+          Array.from(row.children).find(c=>c.textContent===(item.answer?'Verdadero':'Falso')).classList.add('correct');
+        }
+        Array.from(row.children).forEach(c=>c.disabled=true);
+        registerAnswer(item, correct);
+        feedback.textContent = (correct?'¡Correcto! ':'No exactamente. ') + item.explain;
+        feedback.className = 'feedback show ' + (correct?'ok':'bad');
+        nextBtn.disabled=false;
+      });
+      row.appendChild(b);
+    });
+
+    nextBtn.addEventListener('click', goNext);
+    quizBody.append(kicker,h,row,feedback,nextBtn);
+  }
+
+  /* ---------- Speed round (timed TF) ---------- */
+  function renderSpeed(item){
+    const kicker = document.createElement('span');
+    kicker.className='kicker'; kicker.textContent=kickerFor(item);
+    const h = document.createElement('h2'); h.className='qtitle'; h.textContent=item.q;
+    const timerOuter = document.createElement('div'); timerOuter.className='timer-bar-outer';
+    const timerInner = document.createElement('div'); timerInner.className='timer-bar-inner';
+    timerOuter.appendChild(timerInner);
+    const row = document.createElement('div'); row.className='tf-row';
+    const feedback = document.createElement('div'); feedback.className='feedback';
+    const nextBtn = document.createElement('button'); nextBtn.className='next-btn'; nextBtn.textContent='Siguiente'; nextBtn.disabled=true;
+
+    let answered = false;
+    let timeLeft = item.seconds*10; // deciseconds
+    const totalTicks = timeLeft;
+    const interval = setInterval(()=>{
+      timeLeft--;
+      timerInner.style.width = Math.max(0,(timeLeft/totalTicks*100))+'%';
+      if(timeLeft<=0){
+        clearInterval(interval);
+        if(!answered) timeUp();
+      }
+    }, 100);
+
+    function lockAll(){
+      Array.from(row.children).forEach(c=>{c.disabled=true; c.dataset.locked='1';});
+    }
+
+    function timeUp(){
+      answered = true;
+      lockAll();
+      Array.from(row.children).find(c=>c.textContent===(item.answer?'Verdadero':'Falso')).classList.add('correct');
+      registerAnswer(item, false);
+      feedback.textContent = '¡Se acabó el tiempo! ' + (item.explain||'');
+      feedback.className = 'feedback show bad';
+      nextBtn.disabled=false;
+    }
+
+    [['Verdadero',true],['Falso',false]].forEach(([label,val])=>{
+      const b = document.createElement('button');
+      b.className='opt-btn'; b.textContent=label;
+      b.addEventListener('click', ()=>{
+        if(answered) return;
+        answered = true;
+        clearInterval(interval);
+        lockAll();
+        const correct = val===item.answer;
+        b.classList.add(correct?'correct':'incorrect');
+        if(!correct){
+          Array.from(row.children).find(c=>c.textContent===(item.answer?'Verdadero':'Falso')).classList.add('correct');
+        }
+        registerAnswer(item, correct);
+        feedback.textContent = (correct?'¡Correcto y a tiempo! ':'No exactamente. ') + (item.explain||'');
+        feedback.className = 'feedback show ' + (correct?'ok':'bad');
+        nextBtn.disabled=false;
+      });
+      row.appendChild(b);
+    });
+
+    nextBtn.addEventListener('click', goNext);
+    quizBody.append(kicker,h,timerOuter,row,feedback,nextBtn);
+  }
+
+  /* ---------- Ordering game ---------- */
+  function renderOrder(item){
+    const kicker = document.createElement('span');
+    kicker.className='kicker'; kicker.textContent=kickerFor(item);
+    const h = document.createElement('h2'); h.className='qtitle'; h.textContent=item.q;
+    const hint = document.createElement('div'); hint.className='game-hint';
+    hint.textContent = 'Haz clic en cada paso en el orden que creas correcto (1º, 2º, 3º...).';
+    const list = document.createElement('div'); list.className='order-list';
+    const feedback = document.createElement('div'); feedback.className='feedback';
+    const nextBtn = document.createElement('button'); nextBtn.className='next-btn'; nextBtn.textContent='Siguiente'; nextBtn.disabled=true;
+
+    const shuffled = item.steps.map((s,i)=>({text:s, correctIdx:i}));
+    for(let i=shuffled.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];
+    }
+
+    let pickOrder = [];
+    let finished = false;
+
+    shuffled.forEach((step)=>{
+      const el = document.createElement('div');
+      el.className='order-item';
+      const badge = document.createElement('div'); badge.className='order-badge'; badge.textContent='';
+      const txt = document.createElement('div'); txt.textContent=step.text;
+      el.append(badge,txt);
+      el.addEventListener('click', ()=>{
+        if(finished || el.classList.contains('picked')) return;
+        pickOrder.push(step.correctIdx);
+        el.classList.add('picked');
+        badge.textContent = pickOrder.length;
+        if(pickOrder.length===shuffled.length){
+          finished = true;
+          let correctPositions = 0;
+          pickOrder.forEach((ci,pos)=>{ if(ci===pos) correctPositions++; });
+          const fraction = correctPositions/shuffled.length;
+          const earned = Math.round(item.points*fraction);
+          answerLog.push({label:'Minijuego: orden del proceso de IA', points:earned, max:item.points});
+          score += earned;
+          feedback.textContent = 'Acertaste el orden correcto de '+correctPositions+' de '+shuffled.length+' pasos. ('+earned+'/'+item.points+' pts)';
+          feedback.className = 'feedback show ' + (fraction>0.6?'ok':'bad');
+          nextBtn.disabled=false;
+        }
+      });
+      list.appendChild(el);
+    });
+
+    nextBtn.addEventListener('click', goNext);
+    quizBody.append(kicker,h,hint,list,feedback,nextBtn);
+  }
+
+  function shuffleArray(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  /* ---------- Matching game (más dinámico que un memorama: todo está a la vista) ---------- */
+  function renderMatch(item){
+    const kicker = document.createElement('span');
+    kicker.className='kicker'; kicker.textContent=kickerFor(item);
+    const h = document.createElement('h2'); h.className='qtitle'; h.textContent=item.q;
+    const hint = document.createElement('div'); hint.className='game-hint';
+    hint.textContent = 'Toca un término y luego su definición. Si fallas, no pasa nada: puedes volver a intentar.';
+    const stat = document.createElement('div'); stat.className='stat-row';
+    const grid = document.createElement('div'); grid.className='match-grid';
+    const feedback = document.createElement('div'); feedback.className='feedback';
+    const nextBtn = document.createElement('button'); nextBtn.className='next-btn'; nextBtn.textContent='Siguiente'; nextBtn.disabled=true;
+
+    const terms = shuffleArray(item.pairs.map((p,idx)=>({pairId:idx, text:p[0], type:'term'})));
+    const defs = shuffleArray(item.pairs.map((p,idx)=>({pairId:idx, text:p[1], type:'def'})));
+
+    let attempts = 0;
+    let matchedCount = 0;
+    let selected = null;
+
+    stat.innerHTML = '<span id="match-attempts">Intentos: 0</span><span id="match-progress">Relacionados: 0/'+item.pairs.length+'</span>';
+
+    const colTerm = document.createElement('div'); colTerm.className='match-col';
+    const colTermTitle = document.createElement('div'); colTermTitle.className='match-col-title'; colTermTitle.textContent='Término';
+    colTerm.appendChild(colTermTitle);
+
+    const colDef = document.createElement('div'); colDef.className='match-col';
+    const colDefTitle = document.createElement('div'); colDefTitle.className='match-col-title'; colDefTitle.textContent='Definición';
+    colDef.appendChild(colDefTitle);
+
+    function makeItemEl(data){
+      const el = document.createElement('div');
+      el.className='match-item';
+      el.textContent = data.text;
+      el.dataset.pair = data.pairId;
+      el.dataset.type = data.type;
+      el.addEventListener('click', ()=>{
+        if(el.classList.contains('matched')) return;
+
+        if(!selected){
+          selected = {el, data};
+          el.classList.add('selected');
+          return;
+        }
+        if(selected.el===el){
+          el.classList.remove('selected');
+          selected = null;
+          return;
+        }
+        if(selected.data.type===data.type){
+          selected.el.classList.remove('selected');
+          selected = {el, data};
+          el.classList.add('selected');
+          return;
+        }
+
+        attempts++;
+        document.getElementById('match-attempts').textContent = 'Intentos: '+attempts;
+
+        if(selected.data.pairId===data.pairId){
+          selected.el.classList.remove('selected');
+          selected.el.classList.add('matched');
+          el.classList.add('matched');
+          matchedCount++;
+          document.getElementById('match-progress').textContent = 'Relacionados: '+matchedCount+'/'+item.pairs.length;
+          selected = null;
+          if(matchedCount===item.pairs.length){
+            const perfect = item.pairs.length;
+            const extra = Math.max(0, attempts-perfect);
+            const earned = Math.max(8, item.points - extra*2);
+            answerLog.push({label:'Minijuego: relacionar términos de IA', points:earned, max:item.points});
+            score += earned;
+            feedback.textContent = '¡Completado en '+attempts+' intentos! ('+earned+'/'+item.points+' pts)';
+            feedback.className = 'feedback show ok';
+            nextBtn.disabled=false;
+          }
+        } else {
+          const prevEl = selected.el;
+          prevEl.classList.remove('selected');
+          prevEl.classList.add('wrong');
+          el.classList.add('wrong');
+          selected = null;
+          setTimeout(()=>{
+            prevEl.classList.remove('wrong');
+            el.classList.remove('wrong');
+          }, 350);
+        }
+      });
+      return el;
+    }
+
+    terms.forEach(t=> colTerm.appendChild(makeItemEl(t)));
+    defs.forEach(d=> colDef.appendChild(makeItemEl(d)));
+    grid.append(colTerm, colDef);
+
+    nextBtn.addEventListener('click', goNext);
+    quizBody.append(kicker,h,hint,stat,grid,feedback,nextBtn);
+  }
+
+  /* ---------- Prompt builder game ("arma tu prompt") ---------- */
+  function renderPromptBuilder(item){
+    const kicker = document.createElement('span');
+    kicker.className='kicker'; kicker.textContent=kickerFor(item);
+    const h = document.createElement('h2'); h.className='qtitle'; h.textContent=item.q;
+
+    const preview = document.createElement('div'); preview.className='pb-preview';
+    const hint = document.createElement('div'); hint.className='game-hint';
+    hint.textContent = 'Elige una opción de cada categoría. Puedes cambiar tu elección las veces que quieras antes de continuar.';
+
+    const groupsWrap = document.createElement('div');
+    const feedback = document.createElement('div'); feedback.className='feedback';
+    const nextBtn = document.createElement('button'); nextBtn.className='next-btn'; nextBtn.textContent='Ver por qué funciona este prompt'; nextBtn.disabled=true;
+
+    const selections = {};
+
+    function wrapPart(key){
+      return selections[key]
+        ? '<span class="pb-filled">'+selections[key]+'</span>'
+        : '<span class="pb-blank">[elige abajo]</span>';
+    }
+
+    function renderPreview(){
+      preview.innerHTML =
+        '<span class="pb-label">Tu prompt</span>'+
+        'Actúa como '+wrapPart('rol')+
+        ' y ayúdame a '+wrapPart('tarea')+
+        ', para '+wrapPart('contexto')+
+        '. Usa un tono '+wrapPart('tono')+'.';
+    }
+
+    function checkComplete(){
+      nextBtn.disabled = !item.groups.every(g=>selections[g.key]);
+    }
+
+    item.groups.forEach(group=>{
+      const g = document.createElement('div'); g.className='pb-group';
+      const title = document.createElement('div'); title.className='pb-group-title'; title.textContent=group.title;
+      const chips = document.createElement('div'); chips.className='pb-chips';
+      group.options.forEach(opt=>{
+        const chip = document.createElement('button');
+        chip.type='button'; chip.className='pb-chip'; chip.textContent=opt;
+        chip.addEventListener('click', ()=>{
+          chips.querySelectorAll('.pb-chip').forEach(c=>c.classList.remove('active'));
+          chip.classList.add('active');
+          selections[group.key] = opt;
+          renderPreview();
+          checkComplete();
+        });
+        chips.appendChild(chip);
+      });
+      g.append(title, chips);
+      groupsWrap.appendChild(g);
+    });
+
+    renderPreview();
+
+    let revealed = false;
+    nextBtn.addEventListener('click', ()=>{
+      if(!revealed){
+        revealed = true;
+        answerLog.push({label:'Minijuego: arma tu prompt', points:item.points, max:item.points});
+        score += item.points;
+        feedback.textContent = item.explainAfter;
+        feedback.className = 'feedback show ok';
+        nextBtn.textContent = 'Siguiente';
+        return;
+      }
+      goNext();
+    });
+
+    quizBody.append(kicker,h,preview,hint,groupsWrap,feedback,nextBtn);
+  }
+
+  /* ---------- Prompt comparison screen ---------- */
+  function renderPromptCompare(item){
+    const kicker = document.createElement('span');
+    kicker.className='kicker'; kicker.textContent=kickerFor(item);
+    const h = document.createElement('h2'); h.className='qtitle'; h.textContent=item.q;
+    const list = document.createElement('div'); list.className='pc-list';
+    const feedback = document.createElement('div'); feedback.className='feedback';
+    const nextBtn = document.createElement('button'); nextBtn.className='next-btn'; nextBtn.textContent='Ver mi resultado'; nextBtn.disabled=true;
+
+    let answered = false;
+
+    item.options.forEach((opt, idx)=>{
+      const card = document.createElement('div');
+      card.className = 'pc-card';
+      card.innerHTML =
+        '<div class="pc-label">'+opt.label+'</div>'+
+        '<div class="pc-quote">'+opt.text+'</div>'+
+        '<div class="pc-badge '+opt.rating+'">'+opt.rating+'</div>'+
+        '<div class="pc-comment">'+opt.comment+'</div>';
+      card.addEventListener('click', ()=>{
+        if(answered) return;
+        answered = true;
+        const correct = idx===item.bestIndex;
+        list.querySelectorAll('.pc-card').forEach((c,i)=>{
+          c.classList.add('revealed','disabled');
+          if(i===item.bestIndex) c.classList.add('best');
+        });
+        if(!correct) card.classList.add('picked-wrong');
+        const earned = correct ? item.points : Math.round(item.points*0.4);
+        answerLog.push({label:'Comparación de prompts', points:earned, max:item.points});
+        score += earned;
+        feedback.textContent = correct
+          ? '¡Correcto! Ese es el prompt que da mejores resultados — mira por qué en cada tarjeta de arriba.'
+          : 'Ese no era el mejor. Mira las 3 tarjetas de arriba para ver cómo se compara cada nivel de prompt.';
+        feedback.className = 'feedback show ' + (correct?'ok':'bad');
+        nextBtn.disabled = false;
+      });
+      list.appendChild(card);
+    });
+
+    nextBtn.addEventListener('click', goNext);
+    quizBody.append(kicker,h,list,feedback,nextBtn);
+  }
+
+  /* ---------- Recommendations / do's and don'ts screen ---------- */
+  function renderRecommendations(item){
+    const kicker = document.createElement('span');
+    kicker.className='kicker'; kicker.textContent=kickerFor(item);
+    const h = document.createElement('h2'); h.className='qtitle'; h.textContent=item.q;
+    const grid = document.createElement('div'); grid.className='dd-grid';
+
+    const dosCol = document.createElement('div'); dosCol.className='dd-col dos';
+    dosCol.innerHTML = '<div class="dd-col-title">✅ Qué SÍ hacer</div>';
+    item.dos.forEach(d=>{
+      const p = document.createElement('div'); p.className='dd-item'; p.textContent=d;
+      dosCol.appendChild(p);
+    });
+
+    const dontsCol = document.createElement('div'); dontsCol.className='dd-col donts';
+    dontsCol.innerHTML = '<div class="dd-col-title">❌ Qué NO hacer</div>';
+    item.donts.forEach(d=>{
+      const p = document.createElement('div'); p.className='dd-item'; p.textContent=d;
+      dontsCol.appendChild(p);
+    });
+
+    grid.append(dosCol, dontsCol);
+
+    const nextBtn = document.createElement('button'); nextBtn.className='next-btn'; nextBtn.textContent='Ver mi resultado';
+    nextBtn.addEventListener('click', goNext);
+
+    quizBody.append(kicker,h,grid,nextBtn);
+  }
+
+  /* ---------- Scoring helper for simple items ---------- */
+  function registerAnswer(item, correct){
+    const earned = correct?item.points:0;
+    score += earned;
+    let label = item.q.length>60 ? item.q.slice(0,57)+'...' : item.q;
+    answerLog.push({label, points:earned, max:item.points});
+  }
+
+  /* ============== RESULTS ============== */
+  const TARGET_EMAIL = 'jlopez@impulsa.com.gt';
+  const FORMSUBMIT_ENDPOINT = 'https://formsubmit.co/ajax/'+TARGET_EMAIL;
+
+  const thanksTitle = document.getElementById('thanks-title');
+  const scoreCircle = document.getElementById('score-circle');
+  const scorePct = document.getElementById('score-pct');
+  const badgeTitle = document.getElementById('badge-title');
+  const badgeSub = document.getElementById('badge-sub');
+  const breakdown = document.getElementById('breakdown');
+  const inpAplicacion = document.getElementById('inp-aplicacion');
+  const formFields = document.getElementById('form-fields');
+  const btnSend = document.getElementById('btn-send');
+  const btnCopy = document.getElementById('btn-copy');
+  const btnRestart = document.getElementById('btn-restart');
+  const btnMailtoFallback = document.getElementById('btn-mailto-fallback');
+  const sendStatus = document.getElementById('send-status');
+
+  function badgeFor(pct){
+    if(pct<40) return ['Principiante Digital','Vas arrancando tu camino con la IA. ¡Con curiosidad y práctica se aprende rápido!'];
+    if(pct<60) return ['Explorador de IA','Ya conoces las bases. Sigue practicando con casos reales de tu área.'];
+    if(pct<80) return ['Estratega de IA','Tienes buen criterio sobre cómo y cuándo usar IA de forma responsable.'];
+    return ['Maestro/a de la Inteligencia Artificial','Excelente dominio de los conceptos clave y su aplicación práctica.'];
+  }
+
+  function showResults(){
+    screenQuiz.classList.add('hidden');
+    screenResults.classList.remove('hidden');
+    thanksTitle.textContent = userName ? '¡Gracias por participar, '+userName.split(' ')[0]+'!' : '¡Gracias por participar!';
+    const pct = Math.round(score/MAX_SCORE*100);
+    scoreCircle.style.setProperty('--pct', pct);
+    scorePct.textContent = pct+'%';
+    const [title,sub] = badgeFor(pct);
+    badgeTitle.textContent = title;
+    badgeSub.textContent = sub;
+
+    breakdown.innerHTML = '<div style="font-weight:700; color:var(--teal-950);">Puntaje total: '+score+' / '+MAX_SCORE+' pts</div>';
+
+    fireConfetti();
+  }
+
+  function buildSummaryText(idea){
+    const pct = Math.round(score/MAX_SCORE*100);
+    const [title] = badgeFor(pct);
+    let lines = [];
+    lines.push('Resultado - Quiz de Inteligencia Artificial (Impulsa Desarrollos)');
+    lines.push('');
+    lines.push('Nombre: '+userName);
+    lines.push('Área/Departamento: '+userArea);
+    lines.push('Puntaje: '+score+' / '+MAX_SCORE+' pts ('+pct+'%)');
+    lines.push('Nivel: '+title);
+    lines.push('');
+    lines.push('Idea de aplicación de IA en su área:');
+    lines.push(idea);
+    return lines.join('\n');
+  }
+
+  function setSendStatus(kind, html){
+    sendStatus.classList.remove('hidden','pending','ok','err');
+    sendStatus.classList.add(kind);
+    sendStatus.innerHTML = html;
+  }
+
+  async function sendResultsAutomatically(idea){
+    const pct = Math.round(score/MAX_SCORE*100);
+    const [title] = badgeFor(pct);
+
+    btnSend.disabled = true;
+    setSendStatus('pending', '<span class="spinner"></span> Enviando tu resultado a Impulsa...');
+
+    const payload = {
+      _subject: 'Resultado Quiz IA - '+userName+' ('+userArea+')',
+      _template: 'table',
+      _captcha: 'false',
+      Nombre: userName,
+      'Área/Departamento': userArea,
+      Puntaje: score+' / '+MAX_SCORE+' pts ('+pct+'%)',
+      Nivel: title,
+      'Idea de aplicación de IA': idea
+    };
+
+    try{
+      const res = await fetch(FORMSUBMIT_ENDPOINT, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      formFields.classList.add('hidden');
+      setSendStatus('ok', '✅ &nbsp;¡Listo! Tu resultado fue enviado automáticamente a Impulsa. Gracias por participar.');
+    } catch(err){
+      setSendStatus('err', '⚠️ &nbsp;No se pudo enviar automáticamente (puede ser tu conexión, o que el envío automático aún no ha sido activado por Impulsa). Usa el botón de respaldo para enviarlo por correo.');
+      btnMailtoFallback.classList.remove('hidden');
+      btnSend.disabled = false;
+    }
+  }
+
+  btnSend.addEventListener('click', ()=>{
+    const idea = inpAplicacion.value.trim();
+    if(!idea){
+      inpAplicacion.style.borderColor = 'var(--bad)';
+      inpAplicacion.focus();
+      return;
+    }
+    inpAplicacion.style.borderColor = '';
+    sendResultsAutomatically(idea);
+  });
+
+  btnMailtoFallback.addEventListener('click', ()=>{
+    const idea = inpAplicacion.value.trim() || '(sin respuesta)';
+    const subject = 'Resultado Quiz IA - '+userName+' ('+userArea+')';
+    const body = buildSummaryText(idea);
+    const mailto = 'mailto:'+TARGET_EMAIL+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+    window.location.href = mailto;
+  });
+
+  btnCopy.addEventListener('click', ()=>{
+    const idea = inpAplicacion.value.trim() || '(sin respuesta)';
+    const text = buildSummaryText(idea);
+    navigator.clipboard.writeText(text).then(()=>{
+      btnCopy.textContent = '¡Copiado!';
+      setTimeout(()=>{ btnCopy.textContent = 'Copiar resumen'; }, 1800);
+    }).catch(()=>{
+      alert('No se pudo copiar automáticamente. Copia manualmente:\n\n'+text);
+    });
+  });
+
+  btnRestart.addEventListener('click', ()=>{
+    current = 0; score = 0; answerLog.length = 0;
+    inpAplicacion.value = '';
+    inpAplicacion.style.borderColor = '';
+    formFields.classList.remove('hidden');
+    btnSend.disabled = false;
+    btnMailtoFallback.classList.add('hidden');
+    sendStatus.classList.add('hidden');
+    screenResults.classList.add('hidden');
+    screenIntro.classList.remove('hidden');
+    inpNombre.value=''; inpArea.value='';
+    checkIntroReady();
+  });
+
+  /* ============== CONFETTI (celebración al terminar) ============== */
+  const confettiCanvas = document.getElementById('confetti-canvas');
+  const confettiCtx = confettiCanvas.getContext('2d');
+  function resizeConfetti(){
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeConfetti);
+  resizeConfetti();
+
+  function fireConfetti(){
+    const colors = ['#d9a855','#b9822c','#2c6478','#1e4f5e','#2e9e5b'];
+    const pieces = [];
+    const count = 90;
+    for(let i=0;i<count;i++){
+      pieces.push({
+        x: Math.random()*confettiCanvas.width,
+        y: -20 - Math.random()*confettiCanvas.height*0.3,
+        w: 6+Math.random()*6,
+        h: 8+Math.random()*8,
+        color: colors[Math.floor(Math.random()*colors.length)],
+        vy: 2+Math.random()*3,
+        vx: -1.5+Math.random()*3,
+        rot: Math.random()*360,
+        vr: -6+Math.random()*12
+      });
+    }
+    let frame = 0;
+    const maxFrames = 220;
+    function step(){
+      frame++;
+      confettiCtx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+      let anyVisible = false;
+      pieces.forEach(p=>{
+        p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        if(p.y < confettiCanvas.height+20) anyVisible = true;
+        confettiCtx.save();
+        confettiCtx.translate(p.x,p.y);
+        confettiCtx.rotate(p.rot*Math.PI/180);
+        confettiCtx.fillStyle = p.color;
+        confettiCtx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+        confettiCtx.restore();
+      });
+      if(frame<maxFrames && anyVisible){
+        requestAnimationFrame(step);
+      } else {
+        confettiCtx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+})();
+</script>
+</body>
+</html>
